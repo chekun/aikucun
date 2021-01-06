@@ -14,6 +14,7 @@ import (
 	"time"
 )
 
+// Response 公共返回结构体
 type Response struct {
 	Code    string          `json:"code"`
 	Success bool            `json:"success"`
@@ -21,10 +22,12 @@ type Response struct {
 	Data    json.RawMessage `json:"data"`
 }
 
+// IsSuccessful 返回信息是否是成功的
 func (res *Response) IsSuccessful() bool {
 	return res.Success
 }
 
+// Error 转换错误为error对象
 func (res *Response) Error() error {
 	if res.Success {
 		return nil
@@ -32,6 +35,7 @@ func (res *Response) Error() error {
 	return fmt.Errorf("code:%s,%s", res.Code, res.Message)
 }
 
+// Client client
 type Client struct {
 	appID      string
 	appSecret  string
@@ -39,9 +43,10 @@ type Client struct {
 	client     *http.Client
 }
 
+// NewClient 创建client
 func NewClient(appID, appSecret, apiGateway string, client *http.Client) *Client {
 	if client == nil {
-		client = defaultHttpClient()
+		client = defaultHTTPClient()
 	}
 	return &Client{
 		appID:      appID,
@@ -51,7 +56,7 @@ func NewClient(appID, appSecret, apiGateway string, client *http.Client) *Client
 	}
 }
 
-func defaultHttpClient() *http.Client {
+func defaultHTTPClient() *http.Client {
 	tr := &http.Transport{
 		DialContext: (&net.Dialer{
 			Timeout:   5 * time.Second,
@@ -106,6 +111,7 @@ func (c *Client) signParams(router string, params map[string]string, body map[st
 	return values.Encode(), bodyJSON
 }
 
+// GetAutoLoginURL 三方联合登录接口
 func (c *Client) GetAutoLoginURL(phone string) (string, error) {
 	params := map[string]string{
 		"accessToken": "",
