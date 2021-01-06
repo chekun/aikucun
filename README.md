@@ -1,5 +1,7 @@
 # 爱库存API
 
+[![Build Status](https://travis-ci.com/chekun/aikucun.svg?branch=main)](https://travis-ci.com/chekun/aikucun)
+
 > 本仓库目前为自用，不保证满足所有人需求。
 
 ## 快速使用
