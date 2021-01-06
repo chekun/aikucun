@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.com/chekun/aikucun.svg?branch=main)](https://travis-ci.com/chekun/aikucun)
 [![Go Report Card](https://goreportcard.com/badge/github.com/chekun/aikucun)](https://goreportcard.com/report/github.com/chekun/aikucun)
+[![Go Doc](https://godoc.org/github.com/chekun/aikucun?status.svg)](http://godoc.org/github.com/chekun/aikucun)
 
 > 本仓库目前为自用，不保证满足所有人需求。
 
