@@ -141,6 +141,38 @@ func (c *Client) GetAutoLoginURL(phone string) (string, error) {
 	return string(r.Data), nil
 }
 
+// RegisterDistributor 店长注册
+func (c *Client) RegisterDistributor(phone, name string) (string, error) {
+	params := map[string]string{
+		"accessToken": "",
+	}
+	postBody := map[string]interface{}{
+		"phone": phone,
+		"name":  name,
+	}
+	qs, bodyBytes := c.signParams("aikucun.member.open.register.distributor", params, postBody)
+
+	req, err := c.makeRequest("POST", qs, bodyBytes)
+	if err != nil {
+		return "", err
+	}
+	resBody, _, err := c.do(req)
+	if err != nil {
+		return "", err
+	}
+	var r Response
+	err = json.Unmarshal(resBody, &r)
+	if err != nil {
+		return "", err
+	}
+	if !r.IsSuccessful() {
+		return "", r.Error()
+	}
+	var distributor uint64
+	_ = json.Unmarshal(r.Data, &distributor)
+	return fmt.Sprintf("%d", distributor), nil
+}
+
 func (c *Client) makeRequest(method string, params string, body []byte) (*http.Request, error) {
 	toURL := c.apiGateway + "?" + params
 	r, err := http.NewRequest(method, toURL, bytes.NewBuffer(body))

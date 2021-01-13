@@ -2,6 +2,7 @@ package aikucun_test
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/chekun/aikucun"
@@ -25,4 +26,14 @@ func TestGetAutoLoginURL(t *testing.T) {
 		t.Fatalf("failed to get auto login url: %+v\n", err)
 	}
 	t.Logf("got login url: %s", url)
+}
+
+func TestRegisterDistributor(t *testing.T) {
+	client := setUpClient(t)
+	phone := os.Getenv("TEST_PHONE")
+	_, err := client.RegisterDistributor(phone, "测试")
+	if err != nil && !strings.Contains(err.Error(), "已经注册过") {
+		t.Fatalf("failed to get distributorID: %+v\n", err)
+	}
+	t.Log("register ok")
 }
