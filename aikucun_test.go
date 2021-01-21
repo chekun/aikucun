@@ -37,3 +37,12 @@ func TestRegisterDistributor(t *testing.T) {
 	}
 	t.Log("register ok")
 }
+
+func TestGetOrders(t *testing.T) {
+	client := setUpClient(t)
+	_, err := client.GetOrders(1, 20, "2021-01-01 00:00:00", "2021-02-01 00:00:00")
+	if err != nil {
+		t.Fatalf("failed to get orders: %+v\n", err)
+	}
+	t.Log("order req ok")
+}

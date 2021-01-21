@@ -173,6 +173,85 @@ func (c *Client) RegisterDistributor(phone, name string) (string, error) {
 	return fmt.Sprintf("%d", distributor), nil
 }
 
+// OrderItem 三方订单结构体
+type OrderItem struct {
+	OrderNo                 string  `json:"orderNo"`
+	OrderDetailNo           string  `json:"orderDetailNo"`
+	OrderDetailID           string  `json:"orderDetailId"`
+	ProductID               string  `json:"productId"`
+	SkuID                   string  `json:"skuId"`
+	ProductName             string  `json:"productName"`
+	Barcode                 string  `json:"barcode"`
+	ModelNo                 string  `json:"modelNo"`
+	AfterSaleStatus         int     `json:"afterSaleStatus"`
+	PayStatus               int     `json:"payStatus"`
+	ThreeOrderPaymentAmount float64 `json:"threeOrderPaymentAmount"`
+}
+
+// Order 二方订单结构体
+type Order struct {
+	ShopNo          int64        `json:"shopNo"`
+	SellerID        string       `json:"sellerId"`
+	OrderNo         string       `json:"orderNo"`
+	BrandID         string       `json:"brandId"`
+	BrandURL        string       `json:"brandUrl"`
+	BrandName       string       `json:"brandName"`
+	PaymentAmount   float64      `json:"paymentAmount"`
+	OrderStatus     int          `json:"orderStatus"`
+	OrderChannel    string       `json:"orderChannel"`
+	OrderSource     string       `json:"orderSource"`
+	TotalCommission float64      `json:"totalCommission"`
+	OrderTime       string       `json:"orderTime"`
+	Freight         float64      `json:"freight"`
+	ThreeOrderList  []*OrderItem `json:"threeOrderList"`
+}
+
+// OrderResponse 订单接口返回数据结构
+type OrderResponse struct {
+	PageIndex int      `json:"pageIndex"`
+	PageSize  int      `json:"pageSize"`
+	StartRow  int      `json:"startRow"`
+	EndRow    int      `json:"endRow"`
+	Total     int      `json:"total"`
+	Pages     int      `json:"pages"`
+	Result    []*Order `json:"result"`
+}
+
+// 拉取订单
+func (c *Client) GetOrders(page int, pageSize int, from, to string) (*OrderResponse, error) {
+	params := map[string]string{
+		"accessToken": "",
+	}
+	postBody := map[string]interface{}{
+		"currentPage": page,
+		"pageSize":    pageSize,
+		"data": map[string]interface{}{
+			"beginTime": from,
+			"endTime":   to,
+		},
+	}
+	qs, bodyBytes := c.signParams("aikucun.order.seller.order.list", params, postBody)
+	req, err := c.makeRequest("POST", qs, bodyBytes)
+	if err != nil {
+		return nil, err
+	}
+	resBody, _, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+	var r Response
+	err = json.Unmarshal(resBody, &r)
+	if err != nil {
+		return nil, err
+	}
+	if !r.IsSuccessful() {
+		return nil, r.Error()
+	}
+	var orderRes OrderResponse
+	_ = json.Unmarshal(r.Data, &orderRes)
+	return &orderRes, nil
+}
+
 func (c *Client) makeRequest(method string, params string, body []byte) (*http.Request, error) {
 	toURL := c.apiGateway + "?" + params
 	r, err := http.NewRequest(method, toURL, bytes.NewBuffer(body))
