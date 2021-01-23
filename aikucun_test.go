@@ -18,16 +18,6 @@ func setUpClient(t *testing.T) *aikucun.Client {
 	return aikucun.NewClient(appID, appSecret, gateway, nil)
 }
 
-func TestGetAutoLoginURL(t *testing.T) {
-	client := setUpClient(t)
-	phone := os.Getenv("TEST_PHONE")
-	url, err := client.GetAutoLoginURL(phone)
-	if err != nil {
-		t.Fatalf("failed to get auto login url: %+v\n", err)
-	}
-	t.Logf("got login url: %s", url)
-}
-
 func TestRegisterDistributor(t *testing.T) {
 	client := setUpClient(t)
 	phone := os.Getenv("TEST_PHONE")
@@ -38,6 +28,16 @@ func TestRegisterDistributor(t *testing.T) {
 	t.Log("register ok")
 }
 
+func TestGetAutoLoginURL(t *testing.T) {
+	client := setUpClient(t)
+	phone := os.Getenv("TEST_PHONE")
+	url, err := client.GetAutoLoginURL(phone)
+	if err != nil {
+		t.Fatalf("failed to get auto login url: %+v\n", err)
+	}
+	t.Logf("got login url: %s", url)
+}
+
 func TestGetOrders(t *testing.T) {
 	client := setUpClient(t)
 	_, err := client.GetOrders(1, 20, "2021-01-01 00:00:00", "2021-02-01 00:00:00")
@@ -45,4 +45,13 @@ func TestGetOrders(t *testing.T) {
 		t.Fatalf("failed to get orders: %+v\n", err)
 	}
 	t.Log("order req ok")
+}
+
+func TestGetOrderSettleInfo(t *testing.T) {
+	client := setUpClient(t)
+	_, err := client.GetOrderSettleInfo("20210107010153657795")
+	if err != nil {
+		t.Fatalf("failed to get order settle info: %+v\n", err)
+	}
+	t.Log("order settle info ok")
 }

@@ -16,7 +16,7 @@ import (
 
 // Response 公共返回结构体
 type Response struct {
-	Code    string          `json:"code"`
+	Code    interface{}     `json:"code"` //can be string or integer, weird!
 	Success bool            `json:"success"`
 	Message string          `json:"message"`
 	Data    json.RawMessage `json:"data"`
@@ -73,11 +73,12 @@ func defaultHTTPClient() *http.Client {
 }
 
 func (c *Client) signParams(router string, params map[string]string, body map[string]interface{}) (string, []byte) {
+	now := time.Now()
 	newParams := map[string]string{
-		"appid":         "be6c3ca0d9d2480a8e30eec88f7de475",
-		"appsecret":     "6a53203e07e3445eaf4438cda92ea854",
-		"noncestr":      "1",
-		"timestamp":     fmt.Sprintf("%d", time.Now().Unix()),
+		"appid":         c.appID,
+		"appsecret":     c.appSecret,
+		"noncestr":      now.Format("150405"),
+		"timestamp":     fmt.Sprintf("%d", now.Unix()),
 		"version":       "1",
 		"format":        "JSON",
 		"interfaceName": router,
@@ -252,8 +253,44 @@ func (c *Client) GetOrders(page int, pageSize int, from, to string) (*OrderRespo
 	return &orderRes, nil
 }
 
+// 结算订单数据结构
+type OrderSettleInfo struct {
+	IncomeAmount float64 `json:"incomeAmount"`
+	SettleDate   string  `json:"settle_date"`
+	SettleStatus string  `json:"settleStatus"`
+}
+
+// 按照订单号拉取订单结算时间
+func (c *Client) GetOrderSettleInfo(orderNo string) (*OrderSettleInfo, error) {
+	params := map[string]string{
+		"accessToken":   "",
+		"secondOrderNo": orderNo,
+	}
+	qs, bodyBytes := c.signParams("aikucun.settle.shop.income.detail", params, nil)
+	req, err := c.makeRequest("GET", qs, bodyBytes)
+	if err != nil {
+		return nil, err
+	}
+	resBody, _, err := c.do(req)
+	if err != nil {
+		return nil, err
+	}
+	var r Response
+	err = json.Unmarshal(resBody, &r)
+	if err != nil {
+		return nil, err
+	}
+	if !r.IsSuccessful() {
+		return nil, r.Error()
+	}
+	var info OrderSettleInfo
+	_ = json.Unmarshal(r.Data, &info)
+	return &info, nil
+}
+
 func (c *Client) makeRequest(method string, params string, body []byte) (*http.Request, error) {
 	toURL := c.apiGateway + "?" + params
+	fmt.Println(toURL, string(body))
 	r, err := http.NewRequest(method, toURL, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
